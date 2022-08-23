@@ -33,6 +33,7 @@ def get_experiment_name(model, output_dir):
     name_model = os.path.join(output_dir + "nets", name_model)
     name_writer = os.path.join(output_dir + "runs", name)
     name_images = os.path.join(output_dir + "images", name)
+    os.makedirs(name_images, exist_ok=True)
 
     return name_logging, name_model, name_writer, name_images, name
 
