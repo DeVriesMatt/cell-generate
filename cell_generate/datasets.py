@@ -1,3 +1,4 @@
+import torch
 from skimage import io
 from torch.utils.data import Dataset
 from pathlib import Path, PurePath
@@ -67,7 +68,10 @@ class SingleCell(Dataset):
                 + ".tif"
             )
             nuc_image = io.imread(nuc_path)
-            image = np.stack((cell_image, nuc_image))
+            try:
+                image = np.stack((cell_image, nuc_image))
+            except:
+                image = torch.ones((2, 64, 64, 64))
 
         if self.transforms:
             image = self.transforms(image)
