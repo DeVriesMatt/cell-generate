@@ -5,7 +5,7 @@ import logging
 import torchio as tio
 import argparse
 
-from cellshape_cloud.helpers.reports import get_experiment_name
+from cell_generate.reporting import get_experiment_name
 
 from cell_generate.vae import CVAE
 from cell_generate.training_functions import train
@@ -84,7 +84,7 @@ def train_vae(args):
     logging_info = get_experiment_name(
         model=autoencoder, output_dir=args.output_dir
     )
-    name_logging, name_model, name_writer, name = logging_info
+    name_logging, name_model, name_writer, name_images, name = logging_info
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     logging.basicConfig(filename=name_logging, level=logging.INFO)
 
