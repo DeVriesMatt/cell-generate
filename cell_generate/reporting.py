@@ -8,7 +8,7 @@ def get_model_name(model):
     decoder_type = model.decoder_type
     num_features = model.encoder.num_features
     model_name = f"{encoder_type}_{decoder_type}_{num_features}"
-    return model_name
+    return model_name.replace(".", "_")
 
 
 def get_experiment_name(model, output_dir):
