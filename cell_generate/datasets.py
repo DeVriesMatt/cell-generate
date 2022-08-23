@@ -42,30 +42,39 @@ class SingleCell(Dataset):
         serial_number = self.new_df.loc[idx, "serialNumber"]
         if self.cell_component == "cell":
             component_path = "stacked_intensity_cell"
-            path = os.path.join(self.image_path, plate_num, component_path, serial_number + ".tif")
+            path = os.path.join(
+                self.image_path, plate_num, component_path, serial_number + ".tif"
+            )
             image = io.imread(path)
         elif self.cell_component == "nuc":
             component_path = "stacked_intensity_nucleus"
-            path = os.path.join(self.image_path, plate_num, component_path, serial_number + ".tif")
+            path = os.path.join(
+                self.image_path, plate_num, component_path, serial_number + ".tif"
+            )
             image = io.imread(path)
         else:
             cell_component_path = "stacked_intensity_cell"
             try:
                 cell_path = os.path.join(
-                    self.image_path, plate_num, cell_component_path, serial_number + ".tif"
+                    self.image_path,
+                    plate_num,
+                    cell_component_path,
+                    serial_number + ".tif",
                 )
                 cell_image = io.imread(cell_path)
             except:
                 serial_number = serial_number.swapcase()
                 cell_path = os.path.join(
-                    self.image_path, plate_num, cell_component_path, serial_number + ".tif"
+                    self.image_path,
+                    plate_num,
+                    cell_component_path,
+                    serial_number + ".tif",
                 )
                 cell_image = io.imread(cell_path)
 
             nuc_component_path = "stacked_intensity_nucleus"
             nuc_path = os.path.join(
-                self.image_path, plate_num, nuc_component_path, serial_number
-                + ".tif"
+                self.image_path, plate_num, nuc_component_path, serial_number + ".tif"
             )
             nuc_image = io.imread(nuc_path)
             try:
@@ -88,20 +97,20 @@ def pad_img(img, new_size):
     delta_y = new_y - y
     delta_x = new_x - x
 
-    if delta_z%2 == 1:
-        z_padding = (delta_z//2, delta_z//2 + 1)
+    if delta_z % 2 == 1:
+        z_padding = (delta_z // 2, delta_z // 2 + 1)
     else:
-        z_padding = (delta_z//2, delta_z//2)
+        z_padding = (delta_z // 2, delta_z // 2)
 
-    if delta_y%2 == 1:
-        y_padding = (delta_y//2, delta_y//2 + 1)
+    if delta_y % 2 == 1:
+        y_padding = (delta_y // 2, delta_y // 2 + 1)
     else:
-        y_padding = (delta_y//2, delta_y//2)
+        y_padding = (delta_y // 2, delta_y // 2)
 
-    if delta_x%2 == 1:
-        x_padding = (delta_x//2, delta_x//2 + 1)
+    if delta_x % 2 == 1:
+        x_padding = (delta_x // 2, delta_x // 2 + 1)
     else:
-        x_padding = (delta_x//2, delta_x//2)
+        x_padding = (delta_x // 2, delta_x // 2)
 
-    padded_data = np.pad(img, (z_padding, y_padding, x_padding), 'constant')
+    padded_data = np.pad(img, (z_padding, y_padding, x_padding), "constant")
     return padded_data

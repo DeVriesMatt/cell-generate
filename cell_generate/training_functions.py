@@ -7,12 +7,13 @@ from cellshape_cloud.helpers.reports import print_log
 from .losses import beta_loss
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from skimage import io
+import tifffile
 
 
 def train(
     model, dataloader, num_epochs, criterion, optimizer, logging_info, kld_weight, beta
 ):
-    scheduler = ReduceLROnPlateau(optimizer, 'min')
+    scheduler = ReduceLROnPlateau(optimizer, "min")
     name_logging, name_model, name_writer, name_images, name = logging_info
 
     writer = SummaryWriter(log_dir=name_writer)
@@ -66,10 +67,16 @@ def train(
                         f"[{batch_num}/{len(dataloader)}]"
                         f"Total loss (recon + kld): {batch_loss} ({batch_loss_recon} + {batch_loss_kld})"
                     )
-                    io.imsave(name_images + f"/input_{epoch}_{batch_num}.tif",
-                              inputs[0].detach().cpu().numpy())
-                    io.imsave(name_images + f"/output_{epoch}_{batch_num}.tif",
-                              output[0].detach().cpu().numpy())
+                    tifffile.imwrite(
+                        name_images + f"/input_{epoch}_{batch_num}.tif",
+                        inputs[0].detach().cpu().numpy(),
+                        imagej=True,
+                    )
+                    tifffile.imwrite(
+                        name_images + f"/output_{epoch}_{batch_num}.tif",
+                        output[0].detach().cpu().numpy(),
+                        imagej=True,
+                    )
 
             total_loss = running_loss / len(dataloader)
             if total_loss < best_loss:

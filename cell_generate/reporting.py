@@ -13,7 +13,12 @@ def get_model_name(model):
 
 def get_experiment_name(model, output_dir):
     model_name = get_model_name(model)
-    dirs = [output_dir + "runs", output_dir + "reports", output_dir + "nets", output_dir + "images"]
+    dirs = [
+        output_dir + "runs",
+        output_dir + "reports",
+        output_dir + "nets",
+        output_dir + "images",
+    ]
     list(map(lambda x: os.makedirs(x, exist_ok=True), dirs))
     reports_list = sorted(os.listdir(output_dir + "reports"), reverse=True)
     if reports_list:

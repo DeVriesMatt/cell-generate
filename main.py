@@ -44,9 +44,7 @@ def train_vae(args):
         autoencoder.load_state_dict(checkpoint["model_state_dict"])
         print(f"The loss of the loaded model is {checkpoint['loss']}")
     except RuntimeError:
-        print(
-            "The model architecture given doesn't " "match the one provided."
-        )
+        print("The model architecture given doesn't " "match the one provided.")
         print("Training from scratch")
         wrong_architecture = True
         everything_working = False
@@ -60,16 +58,20 @@ def train_vae(args):
         tio.RandomAffine(): 0.8,
     }
 
-    transform = tio.Compose([
-        tio.CropOrPad((args.image_size, args.image_size, args.image_size)),
-        tio.OneOf(spatial_transforms, p=0.5),
-        tio.RandomFlip(axes=['LR', 'AP', 'IS']),
-        tio.RescaleIntensity(out_min_max=(0, 1)),
-    ])
+    transform = tio.Compose(
+        [
+            tio.CropOrPad((args.image_size, args.image_size, args.image_size)),
+            tio.OneOf(spatial_transforms, p=0.5),
+            tio.RandomFlip(axes=["LR", "AP", "IS"]),
+            tio.RescaleIntensity(out_min_max=(0, 1)),
+        ]
+    )
 
-    dataset = SingleCell(image_path=args.dataset_path,
-                         dataframe_path=args.dataframe_path,
-                         transforms=transform)
+    dataset = SingleCell(
+        image_path=args.dataset_path,
+        dataframe_path=args.dataframe_path,
+        transforms=transform,
+    )
 
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
 
@@ -81,9 +83,7 @@ def train_vae(args):
         betas=(0.9, 0.999),
         weight_decay=1e-6,
     )
-    logging_info = get_experiment_name(
-        model=autoencoder, output_dir=args.output_dir
-    )
+    logging_info = get_experiment_name(model=autoencoder, output_dir=args.output_dir)
     name_logging, name_model, name_writer, name_images, name = logging_info
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     logging.basicConfig(filename=name_logging, level=logging.INFO)
@@ -149,6 +149,7 @@ def train_vae(args):
 
     return autoencoder, name_logging, name_model, name_writer, name
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -165,15 +166,14 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--dataset_path",
-        default="/home/mvries/Documents/Datasets/"
-        "OPM/SingleCellFromNathan_17122021/",
+        default="/home/mvries/Documents/Datasets/" "OPM/SingleCellFromNathan_17122021/",
         type=str,
         help="Please provide the path to the " "dataset of 3D tif images",
     )
     parser.add_argument(
         "--dataframe_path",
         default="/home/mvries/Documents/Datasets/OPM/"
-                "SingleCellFromNathan_17122021/all_data_removedwrong_ori_removedTwo.csv",
+        "SingleCellFromNathan_17122021/all_data_removedwrong_ori_removedTwo.csv",
         type=str,
         help="Please provide the path to the dataframe "
         "containing information on the dataset.",
@@ -204,8 +204,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--pretrained_path",
-        default="/run/user/1128299809/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI" \
-                "/DYNCESYS/mvries/Projects/TearingNetNew/Reconstruct_dgcnn_cls_k20_plane/models/shapenetcorev2_250.pkl",
+        default="/run/user/1128299809/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI"
+        "/DYNCESYS/mvries/Projects/TearingNetNew/Reconstruct_dgcnn_cls_k20_plane/models/shapenetcorev2_250.pkl",
         type=str,
         help="Please provide the path to a pretrained autoencoder.",
     )
@@ -220,14 +220,14 @@ if __name__ == "__main__":
         default=4,
         type=int,
         help="Please provide a value for beta for the beta-vae"
-             ". See https://openreview.net/forum?id=Sy2fzU9gl.",
+        ". See https://openreview.net/forum?id=Sy2fzU9gl.",
     )
     parser.add_argument(
         "--kld_weight",
         default=1,
         type=int,
         help="Please provide a value for Kullback_liebler convergence weight"
-             ". See https://openreview.net/forum?id=Sy2fzU9gl.",
+        ". See https://openreview.net/forum?id=Sy2fzU9gl.",
     )
     parser.add_argument(
         "--seed",
