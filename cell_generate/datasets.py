@@ -49,11 +49,17 @@ class SingleCell(Dataset):
             image = io.imread(path)
         else:
             cell_component_path = "stacked_intensity_cell"
-            cell_path = os.path.join(
-                self.image_path, plate_num, cell_component_path, serial_number
-                + ".tif"
-            )
-            cell_image = io.imread(cell_path)
+            try:
+                cell_path = os.path.join(
+                    self.image_path, plate_num, cell_component_path, serial_number + ".tif"
+                )
+                cell_image = io.imread(cell_path)
+            except:
+                serial_number = serial_number.swapcase()
+                cell_path = os.path.join(
+                    self.image_path, plate_num, cell_component_path, serial_number + ".tif"
+                )
+                cell_image = io.imread(cell_path)
 
             nuc_component_path = "stacked_intensity_nucleus"
             nuc_path = os.path.join(
