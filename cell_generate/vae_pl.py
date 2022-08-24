@@ -84,5 +84,6 @@ class VaePL(pl.LightningModule):
                 "recon_loss": recon_loss.mean(),
             }
         )
+        self.log("loss", loss, prog_bar=True)
 
         return loss

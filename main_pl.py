@@ -36,8 +36,10 @@ def train_vae_pl(args):
     )
 
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
-
-    trainer = pl.Trainer(gpus=args.gpus, precision=16, max_epochs=args.num_epochs_autoencoder)
+    logging_path = args.output_dir+"/logs/"
+    trainer = pl.Trainer(gpus=args.gpus, precision=16, max_epochs=args.num_epochs_autoencoder,
+                         default_root_dir=logging_path
+                         )
     trainer.fit(autoencoder, dataloader)
 
 
