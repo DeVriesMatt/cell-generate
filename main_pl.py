@@ -38,7 +38,7 @@ def train_vae_pl(args):
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     trainer = pl.Trainer(gpus=args.gpus, precision=16, max_epochs=args.num_epochs_autoencoder)
-    trainer.fit(autoencoder, train_dataloader=dataloader)
+    trainer.fit(autoencoder, dataloader)
 
 
 def str2bool(v):
