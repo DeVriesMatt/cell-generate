@@ -58,7 +58,8 @@ def train_vae_pl(args):
         dirpath=args.output_dir, save_top_k=1, monitor="loss"
     )
     trainer = pl.Trainer(
-        gpus=args.gpus,
+        accelerator='gpu',
+        devices=args.gpus,
         precision=16,
         max_epochs=args.num_epochs_autoencoder,
         default_root_dir=args.output_dir,
