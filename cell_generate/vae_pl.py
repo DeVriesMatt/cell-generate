@@ -1,6 +1,8 @@
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
+import tifffile
+
 from .vae import Flatten
 
 
@@ -10,6 +12,7 @@ class VaePL(pl.LightningModule):
         encoder,
         decoder,
         args,
+        save_images_path=None,
         num_features=512,
         kld_weight=1,
         criterion=nn.MSELoss(),
@@ -25,6 +28,7 @@ class VaePL(pl.LightningModule):
         self.decoder_type = str(type(decoder))[17:-2]
 
         self.args = args
+        self.save_images_path = save_images_path
 
         self.kld_weight = kld_weight
         self.criterion = criterion
@@ -37,7 +41,9 @@ class VaePL(pl.LightningModule):
         self.deembedding = nn.Linear(self.num_features, 512)
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.args.learning_rate_autoencoder)
+        return torch.optim.Adam(
+            self.parameters(), lr=self.args.learning_rate_autoencoder
+        )
 
     def beta_loss(self, inputs, outputs, mu, log_var):
         recon_loss = self.criterion(inputs, outputs)
@@ -76,6 +82,26 @@ class VaePL(pl.LightningModule):
         output = self._decode(z)
 
         loss, recon_loss, kld_loss = self.beta_loss(inputs, output, mu, log_var)
+
+        if (batch_idx % 10 == 0) and (self.save_images_path is not None):
+            tifffile.imwrite(
+                self.save_images_path
+                + f"/input_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
+                inputs[0].detach().cpu().numpy(),
+                imagej=True,
+                metadata={
+                    "axes": "CZXY",
+                },
+            )
+            tifffile.imwrite(
+                self.save_images_path
+                + f"/output_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
+                output[0].detach().cpu().numpy(),
+                imagej=True,
+                metadata={
+                    "axes": "CZXY",
+                },
+            )
 
         self.log_dict(
             {

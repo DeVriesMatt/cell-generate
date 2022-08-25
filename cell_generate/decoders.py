@@ -8,7 +8,7 @@ class Decoder(nn.Module):
         super().__init__()
         self.filters = [16, 32, 64, 128, 256, 512]
         self.input_shape = input_shape
-        bias = True
+        bias = False
 
         out_pad = 1 if input_shape // 2 // 2 // 2 // 2 // 2 % 2 == 0 else 0
         self.deconv6 = nn.ConvTranspose3d(

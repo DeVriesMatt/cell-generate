@@ -1,4 +1,5 @@
 import torch
+import torchio as tio
 from skimage import io
 from torch.utils.data import Dataset
 from pathlib import Path, PurePath
@@ -15,6 +16,7 @@ class SingleCell(Dataset):
         transforms=None,
         image_size=400,
         cell_component="both",
+        rescale_int=tio.Compose([tio.RescaleIntensity(out_min_max=(0, 1))]),
     ):
         self.image_path = image_path
         self.dataframe_path = dataframe_path
@@ -23,6 +25,7 @@ class SingleCell(Dataset):
         self.transforms = transforms
         self.image_size = image_size
         self.cell_component = cell_component
+        self.rescale_int = rescale_int
         choices = ["cell", "nuc", "both"]
         assert cell_component in choices, f"Please choose one of {choices}."
 
@@ -52,6 +55,7 @@ class SingleCell(Dataset):
                 self.image_path, plate_num, component_path, serial_number + ".tif"
             )
             image = io.imread(path)
+
         else:
             cell_component_path = "stacked_intensity_cell"
             try:
@@ -77,8 +81,17 @@ class SingleCell(Dataset):
                 self.image_path, plate_num, nuc_component_path, serial_number + ".tif"
             )
             nuc_image = io.imread(nuc_path)
+
+            cell_image = self.rescale_int(
+                torch.tensor(cell_image.astype(np.float16)).unsqueeze(0)
+            )
+            nuc_image = self.rescale_int(
+                torch.tensor(nuc_image.astype(np.float16)).unsqueeze(0)
+            )
             try:
-                image = np.stack((cell_image, nuc_image))
+                image = torch.stack(
+                    (torch.squeeze(cell_image), torch.squeeze(nuc_image))
+                )
             except:
                 image = torch.ones((2, 64, 64, 64))
 

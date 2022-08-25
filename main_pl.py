@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 import torchio as tio
 import argparse
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from cell_generate.vae_pl import VaePL
 from cell_generate.encoders import generate_model
@@ -13,7 +14,22 @@ from cell_generate.datasets import SingleCell
 def train_vae_pl(args):
     enc = generate_model(args.depth)
     dec = Decoder()
-    autoencoder = VaePL(encoder=enc, decoder=dec, num_features=args.num_features, args=args)
+    save_images_path = args.output_dir + "/images/"
+
+    autoencoder = VaePL(
+        encoder=enc,
+        decoder=dec,
+        num_features=args.num_features,
+        args=args,
+        save_images_path=save_images_path,
+    )
+
+    try:
+        checkpoint = torch.load(args.pretrained_path)
+        print(checkpoint["hyper_parameters"])
+        autoencoder.load_from_checkpoint(args.pretrained_path)
+    except Exception as e:
+        print(f"Can't load pretrained network due to error {e}")
 
     spatial_transforms = {
         tio.RandomElasticDeformation(): 0.2,
@@ -23,9 +39,8 @@ def train_vae_pl(args):
     transform = tio.Compose(
         [
             tio.CropOrPad((args.image_size, args.image_size, args.image_size)),
-            tio.OneOf(spatial_transforms, p=0.5),
+            tio.OneOf(spatial_transforms, p=0.8),
             tio.RandomFlip(axes=["LR", "AP", "IS"]),
-            tio.RescaleIntensity(out_min_max=(0, 1)),
         ]
     )
 
@@ -35,11 +50,20 @@ def train_vae_pl(args):
         transforms=transform,
     )
 
-    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
-    logging_path = args.output_dir+"/logs/"
-    trainer = pl.Trainer(gpus=args.gpus, precision=16, max_epochs=args.num_epochs_autoencoder,
-                         default_root_dir=logging_path
-                         )
+    dataloader = DataLoader(
+        dataset, batch_size=args.batch_size, shuffle=True, num_workers=4
+    )
+
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=args.output_dir, save_top_k=1, monitor="loss"
+    )
+    trainer = pl.Trainer(
+        gpus=args.gpus,
+        precision=16,
+        max_epochs=args.num_epochs_autoencoder,
+        default_root_dir=args.output_dir,
+        callbacks=[checkpoint_callback],
+    )
     trainer.fit(autoencoder, dataloader)
 
 
