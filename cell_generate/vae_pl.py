@@ -20,7 +20,7 @@ class VaePL(pl.LightningModule):
         beta=4,
     ):
         super(VaePL, self).__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=['criterion', 'encoder', 'decoder'])
         self.num_features = num_features
         self.encoder = encoder
         self.decoder = decoder
