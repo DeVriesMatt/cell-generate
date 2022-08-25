@@ -2,6 +2,7 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import tifffile
+import os
 
 from .vae import Flatten
 
@@ -75,6 +76,9 @@ class VaePL(pl.LightningModule):
         return output
 
     def training_step(self, batch, batch_idx):
+        log_dir_for_images = self.trainer.log_dir
+        log_dir_for_images = log_dir_for_images + "/images/"
+        os.makedirs(log_dir_for_images, exist_ok=True)
         inputs = batch[0]
         mu, log_var, feats = self._encode(inputs)
         z = self.reparametrize(mu, log_var)
@@ -84,22 +88,14 @@ class VaePL(pl.LightningModule):
 
         if (batch_idx % 10 == 0) and (self.save_images_path is not None):
             tifffile.imwrite(
-                self.save_images_path
+                log_dir_for_images
                 + f"/input_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
                 inputs[0].detach().cpu().numpy(),
-                imagej=True,
-                metadata={
-                    "axes": "CZXY",
-                },
             )
             tifffile.imwrite(
-                self.save_images_path
+                log_dir_for_images
                 + f"/output_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
                 output[0].detach().cpu().numpy(),
-                imagej=True,
-                metadata={
-                    "axes": "CZXY",
-                },
             )
 
         self.log_dict(

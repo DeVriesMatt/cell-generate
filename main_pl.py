@@ -25,8 +25,8 @@ def train_vae_pl(args):
     )
 
     try:
-        checkpoint = torch.load(args.pretrained_path)
-        print(checkpoint["hyper_parameters"])
+        # checkpoint = torch.load(args.pretrained_path, map_location="c")
+        # print(checkpoint["hyper_parameters"])
         autoencoder.load_from_checkpoint(args.pretrained_path)
     except Exception as e:
         print(f"Can't load pretrained network due to error {e}")
@@ -121,8 +121,9 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--pretrained_path",
-        default="/run/user/1128299809/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI"
-        "/DYNCESYS/mvries/Projects/TearingNetNew/Reconstruct_dgcnn_cls_k20_plane/models/shapenetcorev2_250.pkl",
+        default="/run/user/1128299809/gvfs/smb-share:server=rds.icr.ac.uk,share=data/DBI/DUDBI/DYNCESYS/"
+        "mvries/ResultsAlma/cell-generate/logs/lightning_logs/version_10233842/checkpoints/"
+        "epoch=3-step=4096.ckpt",
         type=str,
         help="Please provide the path to a pretrained autoencoder.",
     )
