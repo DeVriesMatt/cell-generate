@@ -28,6 +28,7 @@ class VaePL(pl.LightningModule):
         self.decoder_type = str(type(decoder))[17:-2]
 
         self.args = args
+        self.lr = args.learning_rate_autoencoder
         self.save_images_path = save_images_path
 
         self.kld_weight = kld_weight
@@ -42,7 +43,7 @@ class VaePL(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(
-            self.parameters(), lr=self.args.learning_rate_autoencoder
+            self.parameters(), lr=self.lr
         )
 
     def beta_loss(self, inputs, outputs, mu, log_var):
@@ -77,8 +78,12 @@ class VaePL(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         log_dir_for_images = self.trainer.log_dir
-        log_dir_for_images = log_dir_for_images + "/images/"
-        os.makedirs(log_dir_for_images, exist_ok=True)
+        try:
+            log_dir_for_images = log_dir_for_images + "/images/"
+            os.makedirs(log_dir_for_images, exist_ok=True)
+        except:
+            print("Trainer log dir returning None type")
+
         inputs = batch[0]
         mu, log_var, feats = self._encode(inputs)
         z = self.reparametrize(mu, log_var)
@@ -87,16 +92,19 @@ class VaePL(pl.LightningModule):
         loss, recon_loss, kld_loss = self.beta_loss(inputs, output, mu, log_var)
 
         if (batch_idx % 10 == 0) and (self.save_images_path is not None):
-            tifffile.imwrite(
-                log_dir_for_images
-                + f"/input_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
-                inputs[0].detach().cpu().numpy(),
-            )
-            tifffile.imwrite(
-                log_dir_for_images
-                + f"/output_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
-                output[0].detach().cpu().numpy(),
-            )
+            try:
+                tifffile.imwrite(
+                    log_dir_for_images
+                    + f"/input_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
+                    inputs[0].detach().cpu().numpy(),
+                )
+                tifffile.imwrite(
+                    log_dir_for_images
+                    + f"/output_{self.current_epoch}_{str(batch_idx).zfill(5)}.tif",
+                    output[0].detach().cpu().numpy(),
+                )
+            except:
+                print("can't save images")
 
         self.log_dict(
             {

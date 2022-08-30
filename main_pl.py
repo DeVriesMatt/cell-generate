@@ -9,13 +9,13 @@ from cell_generate.vae_pl import VaePL
 from cell_generate.encoders import generate_model
 from cell_generate.decoders import Decoder
 from cell_generate.datasets import SingleCell
-
+# testing
 
 def train_vae_pl(args):
     enc = generate_model(args.depth)
     dec = Decoder()
     save_images_path = args.output_dir + "/images/"
-
+    find_lr = True
     autoencoder = VaePL(
         encoder=enc,
         decoder=dec,
@@ -65,6 +65,25 @@ def train_vae_pl(args):
         default_root_dir=args.output_dir,
         callbacks=[checkpoint_callback],
     )
+
+    if find_lr:
+        # Run learning rate finder
+        lr_finder = trainer.tuner.lr_find(autoencoder, dataloader, num_training=100)
+
+        # Results can be found in
+        print(lr_finder.results)
+
+        # Plot with
+        fig = lr_finder.plot(suggest=True)
+        fig.savefig(args.output_dir + "lr_finder_plot.png")
+
+        # Pick point based on plot, or get suggestion
+        new_lr = lr_finder.suggestion()
+        print(new_lr)
+
+        # update hparams of the model
+        autoencoder.hparams.lr = new_lr
+
     trainer.fit(autoencoder, dataloader)
 
 
